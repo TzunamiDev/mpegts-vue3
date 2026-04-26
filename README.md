@@ -47,6 +47,13 @@ import type { PlayerStatus } from 'mpegts-vue3'
 | `autoplay` | `boolean` | `true` | Auto-play on mount |
 | `isLive` | `boolean` | `true` | Live stream mode |
 | `muted` | `boolean` | `true` | Muted playback |
+| `type` | `string` | `'mse'` | Media type: `'mse'`, `'mpegts'`, `'m2ts'`, `'flv'`, `'mp4'` |
+| `cors` | `boolean` | — | Enable CORS for HTTP fetching |
+| `withCredentials` | `boolean` | — | HTTP fetching with cookies |
+| `hasAudio` | `boolean` | — | Whether stream has audio track |
+| `hasVideo` | `boolean` | — | Whether stream has video track |
+| `duration` | `number` | — | Total media duration in milliseconds |
+| `filesize` | `number` | — | Total file size in bytes |
 | `config` | `Partial<MpegtsConfig>` | `{}` | mpegts.js player config, overrides defaults. See [mpegts.js API](https://github.com/xqq/mpegts.js/blob/master/docs/api.md) |
 
 ### Events

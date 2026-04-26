@@ -6,6 +6,25 @@ export type PlayerStatus =
   | 'playing'
   | 'stopped'
 
+export interface MediaSegment {
+  duration: number
+  filesize?: number
+  url: string
+}
+
+export interface MediaDataSource {
+  type?: string
+  isLive?: boolean
+  cors?: boolean
+  withCredentials?: boolean
+  hasAudio?: boolean
+  hasVideo?: boolean
+  duration?: number
+  filesize?: number
+  url?: string
+  segments?: MediaSegment[]
+}
+
 export interface MpegtsConfig {
   enableWorker?: boolean
   enableWorkerForMSE?: boolean

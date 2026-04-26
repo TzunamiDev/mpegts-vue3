@@ -1,2 +1,2 @@
 export { default as MpegtsPlayer } from './components/MpegtsPlayer.vue'
-export type { MpegtsConfig, PlayerStatus } from './types'
+export type { MediaDataSource, MediaSegment, MpegtsConfig, PlayerStatus } from './types'

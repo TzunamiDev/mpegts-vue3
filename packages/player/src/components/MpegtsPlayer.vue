@@ -5,7 +5,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import Mpegts from 'mpegts.js';
 
-import type { MpegtsConfig, PlayerStatus } from '../types';
+import type { MediaDataSource, MpegtsConfig, PlayerStatus } from '../types';
 
 const DEFAULT_CONFIG: MpegtsConfig = {
   enableStashBuffer: false,
@@ -27,6 +27,13 @@ interface Props {
   autoplay?: boolean;
   isLive?: boolean;
   muted?: boolean;
+  type?: string;
+  cors?: boolean;
+  withCredentials?: boolean;
+  hasAudio?: boolean;
+  hasVideo?: boolean;
+  duration?: number;
+  filesize?: number;
   config?: Partial<MpegtsConfig>;
 }
 
@@ -34,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   autoplay: true,
   isLive: true,
   muted: true,
+  type: 'mse',
   config: () => ({}),
 });
 
@@ -90,6 +98,21 @@ function pause() {
 
 defineExpose({ play, pause });
 
+function buildMediaDataSource(): MediaDataSource {
+  const source: MediaDataSource = {
+    type: props.type,
+    isLive: props.isLive,
+    url: props.src,
+  };
+  if (props.cors !== undefined) source.cors = props.cors;
+  if (props.withCredentials !== undefined) source.withCredentials = props.withCredentials;
+  if (props.hasAudio !== undefined) source.hasAudio = props.hasAudio;
+  if (props.hasVideo !== undefined) source.hasVideo = props.hasVideo;
+  if (props.duration !== undefined) source.duration = props.duration;
+  if (props.filesize !== undefined) source.filesize = props.filesize;
+  return source;
+}
+
 function createPlayer(url: string) {
   destroyPlayer();
 
@@ -104,15 +127,10 @@ function createPlayer(url: string) {
   emit('status', 'connecting');
 
   const mergedConfig: MpegtsConfig = { ...DEFAULT_CONFIG, ...props.config };
+  const mediaSource = buildMediaDataSource();
+  mediaSource.url = url;
 
-  player = Mpegts.createPlayer(
-    {
-      type: 'mse',
-      isLive: props.isLive,
-      url,
-    },
-    mergedConfig,
-  );
+  player = Mpegts.createPlayer(mediaSource, mergedConfig);
 
   player.attachMediaElement(videoRef.value);
 
@@ -168,6 +186,24 @@ watch(
     }
   },
   { deep: true },
+);
+
+watch(
+  () => [
+    props.type,
+    props.isLive,
+    props.cors,
+    props.withCredentials,
+    props.hasAudio,
+    props.hasVideo,
+    props.duration,
+    props.filesize,
+  ],
+  () => {
+    if (props.src) {
+      createPlayer(props.src);
+    }
+  },
 );
 
 onMounted(() => {
