@@ -1,17 +1,27 @@
-# mpegts-vue3
+# mpegts-vue3 / mpegts-react
 
-A Vue 3 component for [mpegts.js](https://github.com/nicedreams/mpegts.js) video streaming player. Supports FLV live streams over HTTP/WebSocket with low-latency playback.
+Vue 3 and React components for [mpegts.js](https://github.com/xqq/mpegts.js) video streaming player. Supports FLV live streams over HTTP/WebSocket with low-latency playback.
+
+This monorepo contains two packages:
+
+- **`mpegts-vue3`** — Vue 3 component (Tailwind CSS)
+- **`mpegts-react`** — React 17+ component (inline styles, zero CSS dependency)
 
 ## Features
 
-- Vue 3 Composition API with full TypeScript support
+- Full TypeScript support
 - Low-latency live stream playback optimized via mpegts.js MSE
 - Auto-play with muted fallback
 - Status overlay states: connecting, playing, error, no signal
 - Exposed `play()` / `pause()` methods for programmatic control
 - ESM + CJS dual format with type declarations
+- Transparent `MediaDataSource` and `Config` props passthrough
 
-## Install
+---
+
+## Vue 3 (`mpegts-vue3`)
+
+### Install
 
 ```bash
 pnpm add mpegts-vue3 mpegts.js
@@ -19,7 +29,7 @@ pnpm add mpegts-vue3 mpegts.js
 
 `mpegts.js` and `vue` are peer dependencies and must be installed separately.
 
-## Usage
+### Usage
 
 ```vue
 <script setup lang="ts">
@@ -39,7 +49,57 @@ import type { PlayerStatus } from 'mpegts-vue3'
 </template>
 ```
 
-### Props
+### Tailwind CSS
+
+The Vue 3 component uses Tailwind CSS utility classes. If your project uses Tailwind CSS v4, add:
+
+```css
+@import 'tailwindcss';
+@source 'node_modules/mpegts-vue3/dist/**/*.js';
+```
+
+---
+
+## React (`mpegts-react`)
+
+### Install
+
+```bash
+pnpm add mpegts-react mpegts.js
+```
+
+`mpegts.js` and `react` are peer dependencies and must be installed separately.
+
+### Usage
+
+```tsx
+import { MpegtsPlayer } from 'mpegts-react'
+import type { PlayerStatus } from 'mpegts-react'
+
+function App() {
+  const ref = useRef<MpegtsPlayerRef>(null)
+
+  return (
+    <MpegtsPlayer
+      ref={ref}
+      url="ws://host:port/live/stream.flv"
+      autoplay={true}
+      isLive={true}
+      muted={true}
+      onStatus={(s: PlayerStatus) => console.log(s)}
+      onError={(type, detail, info) => console.error(type, detail)}
+    />
+  )
+}
+```
+
+The React component uses inline styles with zero CSS dependencies.
+
+---
+
+## Shared Props API
+
+Both Vue 3 and React components share the same props interface:
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -54,16 +114,16 @@ import type { PlayerStatus } from 'mpegts-vue3'
 | `hasVideo` | `boolean` | — | Whether stream has video track |
 | `duration` | `number` | — | Total media duration in milliseconds |
 | `filesize` | `number` | — | Total file size in bytes |
-| `config` | `Partial<MpegtsConfig>` | `{}` | mpegts.js player config, overrides defaults. See [mpegts.js API](https://github.com/xqq/mpegts.js/blob/master/docs/api.md) |
+| `config` | `Partial<MpegtsConfig>` | `{}` | mpegts.js player config. See [mpegts.js API](https://github.com/xqq/mpegts.js/blob/master/docs/api.md) |
 
-### Events
+### Events / Callbacks
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| `status` | `(status: PlayerStatus)` | Emitted on status change |
-| `error` | `(errorType, errorDetail, errorInfo)` | Emitted on playback error |
+| `onStatus` / `@status` | `(status: PlayerStatus)` | Status change |
+| `onError` / `@error` | `(errorType, errorDetail, errorInfo)` | Playback error |
 
-### Exposed Methods
+### Ref Methods
 
 | Method | Description |
 |--------|-------------|
@@ -77,25 +137,14 @@ type PlayerStatus =
   | 'connecting'  // Connecting to stream
   | 'destroying'  // Destroying player instance
   | 'error'       // Playback error
-  | 'nosignal'    // No signal / no src
+  | 'nosignal'    // No signal / no url
   | 'playing'     // Playing
   | 'stopped'     // Paused / stopped
 ```
 
-## Tailwind CSS
-
-This component uses [Tailwind CSS](https://tailwindcss.com/) utility classes for styling. If your project uses Tailwind CSS v4, add the following to your main CSS file to include the component's classes:
-
-```css
-@import 'tailwindcss';
-@source 'node_modules/mpegts-vue3/dist/**/*.js';
-```
-
-If you're not using Tailwind, the component will still render — just without the overlay styling (connecting spinner, error icon, etc.).
-
 ## Demo
 
-A live demo is available at [GitHub Pages](https://your-username.github.io/mpegts-vue3/).
+A live Vue 3 demo is available at [GitHub Pages](https://your-username.github.io/mpegts-vue3/).
 
 To run locally:
 
@@ -107,13 +156,15 @@ pnpm dev
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
 
-# Build the library
+# Build Vue 3 package
 pnpm -C packages/player build
 
-# Build the demo
+# Build React package
+pnpm -C packages/react-player build
+
+# Build demo
 pnpm -C apps/demo build
 
 # Run demo dev server
@@ -122,21 +173,21 @@ pnpm dev
 
 ## Publishing
 
-The package is published automatically via GitHub Actions when a version tag is pushed:
+Both packages are published automatically via GitHub Actions when a version tag is pushed:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Manual publish is also available via the `Publish to npm` workflow with a dry-run option.
+Manual publish is also available via the `Publish to npm` workflow with options to publish all, `mpegts-vue3` only, or `mpegts-react` only.
 
 ## Tech Stack
 
-- [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/)
-- [mpegts.js](https://github.com/nicedreams/mpegts.js) — FLV over HTTP/WebSocket playback
+- [Vue 3](https://vuejs.org/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [mpegts.js](https://github.com/xqq/mpegts.js) — FLV over HTTP/WebSocket playback
 - [tsdown](https://tsdown.dev/) — Library bundler powered by Rolldown
-- [Tailwind CSS v4](https://tailwindcss.com/) — Utility-first CSS
+- [Tailwind CSS v4](https://tailwindcss.com/) — Vue component styling
 - [antdv-next](https://antdv-next.com/) + [lucide-vue-next](https://lucide.dev/) — Demo UI
 
 ## License

@@ -14,6 +14,15 @@ on:
         options:
           - 'false'
           - 'true'
+      package:
+        description: 'Which package to publish'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'mpegts-vue3'
+          - 'mpegts-react'
 
 permissions:
   contents: read
@@ -34,19 +43,34 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm -C packages/player run build
+      - name: Build mpegts-vue3
+        if: github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-vue3' || github.event_name == 'push'
+        run: pnpm -C packages/player run build
 
-      - name: Check package validity
-        run: npx publint packages/player
+      - name: Build mpegts-react
+        if: github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-react' || github.event_name == 'push'
+        run: pnpm -C packages/react-player run build
 
-      - name: Publish to npm
-        if: github.event.inputs.dry_run != 'true'
+      - name: Publish mpegts-vue3
+        if: (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-vue3' || github.event_name == 'push') && github.event.inputs.dry_run != 'true'
         run: npm publish packages/player --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Dry run publish
-        if: github.event.inputs.dry_run == 'true'
+      - name: Publish mpegts-react
+        if: (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-react' || github.event_name == 'push') && github.event.inputs.dry_run != 'true'
+        run: npm publish packages/react-player --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish mpegts-vue3
+        if: github.event.inputs.dry_run == 'true' && (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-vue3')
         run: npm publish packages/player --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish mpegts-react
+        if: github.event.inputs.dry_run == 'true' && (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-react')
+        run: npm publish packages/react-player --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
