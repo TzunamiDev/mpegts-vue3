@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: MpegtsConfig = {
 };
 
 interface Props {
-  src: string;
+  url: string;
   autoplay?: boolean;
   isLive?: boolean;
   muted?: boolean;
@@ -102,7 +102,7 @@ function buildMediaDataSource(): MediaDataSource {
   const source: MediaDataSource = {
     type: props.type ?? 'mse',
     isLive: props.isLive,
-    url: props.src,
+    url: props.url,
   };
   if (props.cors !== undefined) source.cors = props.cors;
   if (props.withCredentials !== undefined) source.withCredentials = props.withCredentials;
@@ -113,10 +113,10 @@ function buildMediaDataSource(): MediaDataSource {
   return source;
 }
 
-function createPlayer(url: string) {
+function createPlayer() {
   destroyPlayer();
 
-  if (!url || !videoRef.value) return;
+  if (!props.url || !videoRef.value) return;
   if (!Mpegts.isSupported()) {
     status.value = 'error';
     emit('status', 'error');
@@ -128,7 +128,6 @@ function createPlayer(url: string) {
 
   const mergedConfig: MpegtsConfig = { ...DEFAULT_CONFIG, ...props.config };
   const mediaSource = buildMediaDataSource();
-  mediaSource.url = url;
 
   player = Mpegts.createPlayer(mediaSource, mergedConfig);
 
@@ -166,10 +165,10 @@ function createPlayer(url: string) {
 }
 
 watch(
-  () => props.src,
-  (newSrc) => {
-    if (newSrc) {
-      createPlayer(newSrc);
+  () => props.url,
+  (newUrl) => {
+    if (newUrl) {
+      createPlayer();
     } else {
       destroyPlayer();
       status.value = 'nosignal';
@@ -181,8 +180,8 @@ watch(
 watch(
   () => props.config,
   () => {
-    if (props.src) {
-      createPlayer(props.src);
+    if (props.url) {
+      createPlayer();
     }
   },
   { deep: true },
@@ -200,15 +199,15 @@ watch(
     props.filesize,
   ],
   () => {
-    if (props.src) {
-      createPlayer(props.src);
+    if (props.url) {
+      createPlayer();
     }
   },
 );
 
 onMounted(() => {
-  if (props.src) {
-    createPlayer(props.src);
+  if (props.url) {
+    createPlayer();
   }
 });
 
@@ -235,7 +234,7 @@ onUnmounted(() => {
       @contextmenu.prevent
     ></video>
     <div
-      v-if="status === 'nosignal' || !src"
+      v-if="status === 'nosignal' || !url"
       class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90"
     >
       <div class="mb-3 flex items-center gap-2 text-gray-400">
@@ -274,7 +273,7 @@ onUnmounted(() => {
       </div>
     </div>
     <div
-      v-if="status === 'error' && src"
+      v-if="status === 'error' && url"
       class="absolute inset-0 flex items-center justify-center bg-black/60"
     >
       <div class="flex flex-col items-center gap-2">

@@ -181,7 +181,7 @@ const gridColsClass = computed(() => {
           >
             <MpegtsPlayer
               :ref="(el: any) => setPlayerRef(0, el)"
-              :src="inputUrl"
+              :url="inputUrl"
               :muted="muted"
               :config="config"
               @status="(s: PlayerStatus) => onPlayerStatus(0, s)"
@@ -196,7 +196,7 @@ const gridColsClass = computed(() => {
             >
               <MpegtsPlayer
                 :ref="(el: any) => setPlayerRef(slot.id, el)"
-                :src="inputUrl"
+                :url="inputUrl"
                 :muted="muted"
                 :config="config"
                 @status="(s: PlayerStatus) => onPlayerStatus(slot.id, s)"

@@ -29,7 +29,7 @@ import type { PlayerStatus } from 'mpegts-vue3'
 
 <template>
   <MpegtsPlayer
-    src="ws://host:port/live/stream.flv"
+    url="ws://host:port/live/stream.flv"
     :autoplay="true"
     :is-live="true"
     :muted="true"
@@ -43,7 +43,7 @@ import type { PlayerStatus } from 'mpegts-vue3'
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `src` | `string` | — | Stream URL (required) |
+| `url` | `string` | — | Stream URL (required, same as mpegts.js `MediaDataSource.url`) |
 | `autoplay` | `boolean` | `true` | Auto-play on mount |
 | `isLive` | `boolean` | `true` | Live stream mode |
 | `muted` | `boolean` | `true` | Muted playback |
