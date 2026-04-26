@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, shallowReactive } from 'vue';
 
-import { Monitor } from 'lucide-vue-next';
+import { Languages, Monitor } from 'lucide-vue-next';
 
 import { Input, Slider, Switch } from 'antdv-next';
 
 import { MpegtsPlayer } from 'mpegts-vue3';
 import type { PlayerStatus } from 'mpegts-vue3';
 
+import { t, toggleLocale, useLocale } from './i18n';
+
 type GridLayout = 1 | 4 | 9;
+
+const lang = useLocale();
+const langLabel = computed(() => (lang.value === 'en' ? '中文' : 'EN'));
 
 const DEFAULT_URL = 'ws://192.168.100.94:15354/live/chn1.flv';
 
@@ -16,10 +21,10 @@ const gridLayout = ref<GridLayout>(1);
 const muted = ref(true);
 const inputUrl = ref(DEFAULT_URL);
 
-const presets = [
-  { label: 'Channel 1', url: 'ws://192.168.100.94:15354/live/chn1.flv' },
-  { label: 'Channel 2', url: 'ws://192.168.100.94:15354/live/chn2.flv' },
-];
+const presets = computed(() => [
+  { label: `${t('channel')} 1`, url: 'ws://192.168.100.94:15354/live/chn1.flv' },
+  { label: `${t('channel')} 2`, url: 'ws://192.168.100.94:15354/live/chn2.flv' },
+]);
 
 const gridSlots = computed(() => {
   return Array.from({ length: gridLayout.value }, (_, i) => ({
@@ -50,15 +55,8 @@ const statusColor = computed(() => {
 });
 
 const statusText = computed(() => {
-  const map: Record<PlayerStatus, string> = {
-    connecting: 'Connecting',
-    destroying: 'Destroying',
-    error: 'Error',
-    nosignal: 'No Signal',
-    playing: 'Playing',
-    stopped: 'Stopped',
-  };
-  return map[activePlayerStatus.value];
+  const key = activePlayerStatus.value as string
+  return t(key)
 });
 
 const config = shallowReactive({
@@ -125,22 +123,29 @@ const gridColsClass = computed(() => {
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <Monitor class="size-6 text-blue-500" />
-          <h2 class="m-0 text-lg font-semibold">Video Player Debug</h2>
+          <h2 class="m-0 text-lg font-semibold">{{ t('title') }}</h2>
         </div>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400">Status:</span>
+            <span class="text-xs text-gray-400">{{ t('status') }}:</span>
             <span class="text-sm font-medium" :class="statusColor">
               {{ statusText }}
             </span>
           </div>
+          <button
+            class="flex items-center gap-1 rounded border border-gray-700 px-2 py-1 text-xs transition-colors hover:border-blue-500 hover:text-blue-500"
+            @click="toggleLocale"
+          >
+            <Languages class="size-3.5" />
+            {{ langLabel }}
+          </button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="xl:col-span-2">
           <div class="mb-3 flex items-center gap-2">
-            <span class="text-xs text-gray-400">Windows:</span>
+            <span class="text-xs text-gray-400">{{ t('windows') }}:</span>
             <button
               v-for="layout in [1, 4, 9] as GridLayout[]"
               :key="layout"
@@ -152,20 +157,20 @@ const gridColsClass = computed(() => {
               "
               @click="gridLayout = layout"
             >
-              {{ layout }} Window{{ layout > 1 ? 's' : '' }}
+              {{ layout }} {{ layout === 1 ? t('window') : t('windows') }}
             </button>
             <div class="ml-auto flex gap-2">
               <button
                 class="rounded border border-gray-700 px-3 py-1 text-xs hover:bg-gray-800"
                 @click="playAll"
               >
-                Play All
+                {{ t('playAll') }}
               </button>
               <button
                 class="rounded border border-gray-700 px-3 py-1 text-xs hover:bg-gray-800"
                 @click="pauseAll"
               >
-                Pause All
+                {{ t('pauseAll') }}
               </button>
             </div>
           </div>
@@ -200,7 +205,7 @@ const gridColsClass = computed(() => {
 
         <div class="flex flex-col gap-4">
           <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-            <h3 class="m-0 mb-3 text-sm font-semibold">Stream URL</h3>
+            <h3 class="m-0 mb-3 text-sm font-semibold">{{ t('streamUrl') }}</h3>
             <div class="flex gap-2">
               <Input
                 v-model:value="inputUrl"
@@ -213,7 +218,7 @@ const gridColsClass = computed(() => {
                 class="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
                 @click="applyUrl"
               >
-                Apply
+                {{ t('apply') }}
               </button>
             </div>
             <div class="mt-3 flex flex-wrap gap-2">
@@ -232,10 +237,10 @@ const gridColsClass = computed(() => {
           </div>
 
           <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-            <h3 class="m-0 mb-3 text-sm font-semibold">Playback Control</h3>
+            <h3 class="m-0 mb-3 text-sm font-semibold">{{ t('playbackControl') }}</h3>
             <div class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-400">Muted</span>
+                <span class="text-xs text-gray-400">{{ t('muted') }}</span>
                 <Switch v-model:checked="muted" size="small" />
               </div>
               <div class="flex gap-2">
@@ -243,24 +248,24 @@ const gridColsClass = computed(() => {
                   class="flex-1 rounded border border-gray-700 px-3 py-1.5 text-xs hover:bg-gray-800"
                   @click="playAll"
                 >
-                  Play
+                  {{ t('play') }}
                 </button>
                 <button
                   class="flex-1 rounded border border-gray-700 px-3 py-1.5 text-xs hover:bg-gray-800"
                   @click="pauseAll"
                 >
-                  Pause
+                  {{ t('pause') }}
                 </button>
               </div>
             </div>
           </div>
 
           <div class="rounded-lg border border-gray-700 bg-gray-900 p-4">
-            <h3 class="m-0 mb-3 text-sm font-semibold">Live Parameters</h3>
+            <h3 class="m-0 mb-3 text-sm font-semibold">{{ t('liveParameters') }}</h3>
             <div class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Enable IO Buffer (enableStashBuffer)
+                  {{ t('enableStashBuffer') }}
                 </span>
                 <Switch
                   v-model:checked="config.enableStashBuffer"
@@ -271,7 +276,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Stash Initial Size (KB)
+                    {{ t('stashInitialSize') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.stashInitialSize }}
@@ -288,7 +293,7 @@ const gridColsClass = computed(() => {
 
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Latency Chasing (liveBufferLatencyChasing)
+                  {{ t('latencyChasing') }}
                 </span>
                 <Switch
                   v-model:checked="config.liveBufferLatencyChasing"
@@ -298,7 +303,7 @@ const gridColsClass = computed(() => {
 
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Chase on Pause (liveBufferLatencyChasingOnPaused)
+                  {{ t('chaseOnPause') }}
                 </span>
                 <Switch
                   v-model:checked="config.liveBufferLatencyChasingOnPaused"
@@ -309,7 +314,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Max Latency (s)
+                    {{ t('maxLatency') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.liveBufferLatencyMaxLatency }}
@@ -327,7 +332,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Min Remain (s)
+                    {{ t('minRemain') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.liveBufferLatencyMinRemain }}
@@ -344,7 +349,7 @@ const gridColsClass = computed(() => {
 
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Rate Sync (liveSync)
+                  {{ t('rateSync') }}
                 </span>
                 <Switch v-model:checked="config.liveSync" size="small" />
               </div>
@@ -352,7 +357,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Sync Max Latency (s)
+                    {{ t('syncMaxLatency') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.liveSyncMaxLatency }}
@@ -370,7 +375,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Sync Target Latency (s)
+                    {{ t('syncTargetLatency') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.liveSyncTargetLatency }}
@@ -387,7 +392,7 @@ const gridColsClass = computed(() => {
 
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Auto Cleanup SourceBuffer
+                  {{ t('autoCleanup') }}
                 </span>
                 <Switch
                   v-model:checked="config.autoCleanupSourceBuffer"
@@ -398,7 +403,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Cleanup Max Backward (s)
+                    {{ t('cleanupMaxBackward') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.autoCleanupMaxBackwardDuration }}
@@ -416,7 +421,7 @@ const gridColsClass = computed(() => {
               <div>
                 <div class="mb-1 flex items-center justify-between">
                   <span class="text-xs text-gray-400">
-                    Cleanup Min Backward (s)
+                    {{ t('cleanupMinBackward') }}
                   </span>
                   <span class="text-xs font-mono text-blue-400">
                     {{ config.autoCleanupMinBackwardDuration }}
@@ -433,7 +438,7 @@ const gridColsClass = computed(() => {
 
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">
-                  Fix Audio Timestamp Gap
+                  {{ t('fixAudioTimestampGap') }}
                 </span>
                 <Switch
                   v-model:checked="config.fixAudioTimestampGap"
