@@ -100,7 +100,7 @@ defineExpose({ play, pause });
 
 function buildMediaDataSource(): MediaDataSource {
   const source: MediaDataSource = {
-    type: props.type,
+    type: props.type ?? 'mse',
     isLive: props.isLive,
     url: props.src,
   };
