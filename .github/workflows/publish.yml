@@ -53,24 +53,24 @@ jobs:
 
       - name: Publish mpegts-vue3
         if: (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-vue3' || github.event_name == 'push') && github.event.inputs.dry_run != 'true'
-        run: npm publish packages/player --access public
+        run: npm publish --prefix packages/player --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish mpegts-react
         if: (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-react' || github.event_name == 'push') && github.event.inputs.dry_run != 'true'
-        run: npm publish packages/react-player --access public
+        run: npm publish --prefix packages/react-player --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Dry run publish mpegts-vue3
         if: github.event.inputs.dry_run == 'true' && (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-vue3')
-        run: npm publish packages/player --access public --dry-run
+        run: npm publish --prefix packages/player --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Dry run publish mpegts-react
         if: github.event.inputs.dry_run == 'true' && (github.event.inputs.package == 'all' || github.event.inputs.package == 'mpegts-react')
-        run: npm publish packages/react-player --access public --dry-run
+        run: npm publish --prefix packages/react-player --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
