@@ -6,7 +6,7 @@
     }
   },
   "git": {
-    "commit": false,
+    "commit": true,
     "tag": true,
     "push": true,
     "tagName": "v${version}"

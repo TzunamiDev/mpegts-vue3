@@ -1,9 +1,15 @@
 {
   "name": "mpegts-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "React component for mpegts.js video streaming player",
-  "keywords": ["react", "mpegts", "flv", "live-streaming", "player"],
+  "keywords": [
+    "react",
+    "mpegts",
+    "flv",
+    "live-streaming",
+    "player"
+  ],
   "license": "MIT",
   "author": "",
   "repository": {
@@ -25,7 +31,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsdown && node -e \"const fs=require('fs'),d='dist';fs.readdirSync(d).filter(f=>f.startsWith('index-')&&f.endsWith('.d.ts')).forEach(f=>fs.renameSync(d+'/'+f,d+'/index.d.ts'));fs.readdirSync(d).filter(f=>f.startsWith('index-')&&f.endsWith('.d.cts')).forEach(f=>fs.renameSync(d+'/'+f,d+'/index.d.cts'))\""
