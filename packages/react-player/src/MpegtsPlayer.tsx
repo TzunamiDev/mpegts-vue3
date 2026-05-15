@@ -27,6 +27,8 @@ const DEFAULT_CONFIG: MpegtsConfig = {
 
 export interface MpegtsPlayerProps {
   url: string
+  className?: string
+  style?: React.CSSProperties
   autoplay?: boolean
   isLive?: boolean
   muted?: boolean
@@ -46,12 +48,16 @@ export interface MpegtsPlayerProps {
 export interface MpegtsPlayerRef {
   play: () => void
   pause: () => void
+  getVideoElement: () => HTMLVideoElement | null
+  getPlayer: () => Mpegts.Player | null
 }
 
 export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
   function MpegtsPlayer(props, ref) {
     const {
       url,
+      className,
+      style,
       autoplay = true,
       isLive = true,
       muted = true,
@@ -112,7 +118,16 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
       updateStatus('stopped')
     }, [updateStatus])
 
-    useImperativeHandle(ref, () => ({ play: doPlay, pause: doPause }), [doPlay, doPause])
+    useImperativeHandle(
+      ref,
+      () => ({
+        play: doPlay,
+        pause: doPause,
+        getVideoElement: () => videoRef.current,
+        getPlayer: () => playerRef.current,
+      }),
+      [doPlay, doPause]
+    )
 
     useEffect(() => {
       if (!url || !videoRef.current) return
@@ -238,7 +253,7 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
     const showError = status === 'error' && !!url
 
     return (
-      <div style={containerStyle}>
+      <div className={className} style={{ ...containerStyle, ...style }}>
         <video
           ref={videoRef}
           style={videoStyle}
