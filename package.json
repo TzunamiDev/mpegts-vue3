@@ -4,10 +4,18 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
-    "dev": "pnpm -C apps/demo dev"
+    "dev": "pnpm -C apps/demo dev",
+    "dev:react": "pnpm -C apps/react-demo dev",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm run build && changeset publish"
   },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@9.15.4"
+  "packageManager": "pnpm@9.15.4",
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0"
+  }
 }

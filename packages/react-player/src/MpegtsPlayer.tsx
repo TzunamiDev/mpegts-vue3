@@ -61,7 +61,7 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
       hasVideo,
       duration,
       filesize,
-      config = {},
+      config,
       onStatus,
       onError,
     } = props
@@ -74,47 +74,25 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
     onStatusRef.current = onStatus
     const onErrorRef = useRef(onError)
     onErrorRef.current = onError
+    const configRef = useRef(config)
+    configRef.current = config
+    const autoplayRef = useRef(autoplay)
+    autoplayRef.current = autoplay
+    const mutedRef = useRef(muted)
+    mutedRef.current = muted
+
+    const propsRef = useRef({ type, isLive, cors, withCredentials, hasAudio, hasVideo, duration, filesize })
+    propsRef.current = { type, isLive, cors, withCredentials, hasAudio, hasVideo, duration, filesize }
 
     const updateStatus = useCallback((s: PlayerStatus) => {
       setStatus(s)
       onStatusRef.current?.(s)
     }, [])
 
-    const destroyPlayer = useCallback(() => {
-      const player = playerRef.current
-      if (!player) return
-      updateStatus('destroying')
-      try {
-        player.pause()
-        player.unload()
-        player.detachMediaElement()
-        player.destroy()
-      } catch {
-        // ignore cleanup errors
-      }
-      playerRef.current = null
-      updateStatus('nosignal')
-    }, [updateStatus])
-
-    const buildMediaDataSource = useCallback((): MediaDataSource => {
-      const source: MediaDataSource = {
-        type: type ?? 'mse',
-        isLive,
-        url,
-      }
-      if (cors !== undefined) source.cors = cors
-      if (withCredentials !== undefined) source.withCredentials = withCredentials
-      if (hasAudio !== undefined) source.hasAudio = hasAudio
-      if (hasVideo !== undefined) source.hasVideo = hasVideo
-      if (duration !== undefined) source.duration = duration
-      if (filesize !== undefined) source.filesize = filesize
-      return source
-    }, [url, type, isLive, cors, withCredentials, hasAudio, hasVideo, duration, filesize])
-
     const doPlay = useCallback(() => {
       const player = playerRef.current
       if (!player || !videoRef.current) return
-      videoRef.current.muted = muted
+      videoRef.current.muted = mutedRef.current
       const result = player.play()
       if (result instanceof Promise) {
         result
@@ -123,7 +101,7 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
       } else {
         updateStatus('playing')
       }
-    }, [muted, updateStatus])
+    }, [updateStatus])
 
     const doPause = useCallback(() => {
       const player = playerRef.current
@@ -143,10 +121,21 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
 
       updateStatus('connecting')
 
-      const mergedConfig: MpegtsConfig = { ...DEFAULT_CONFIG, ...config }
-      const mediaSource = buildMediaDataSource()
+      const currentProps = propsRef.current
+      const mergedConfig: MpegtsConfig = { ...DEFAULT_CONFIG, ...configRef.current }
+      const source: MediaDataSource = {
+        type: currentProps.type ?? 'mse',
+        isLive: currentProps.isLive,
+        url,
+      }
+      if (currentProps.cors !== undefined) source.cors = currentProps.cors
+      if (currentProps.withCredentials !== undefined) source.withCredentials = currentProps.withCredentials
+      if (currentProps.hasAudio !== undefined) source.hasAudio = currentProps.hasAudio
+      if (currentProps.hasVideo !== undefined) source.hasVideo = currentProps.hasVideo
+      if (currentProps.duration !== undefined) source.duration = currentProps.duration
+      if (currentProps.filesize !== undefined) source.filesize = currentProps.filesize
 
-      const player = Mpegts.createPlayer(mediaSource, mergedConfig)
+      const player = Mpegts.createPlayer(source, mergedConfig)
       playerRef.current = player
 
       player.attachMediaElement(videoRef.current)
@@ -161,8 +150,8 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
 
       player.load()
 
-      if (autoplay) {
-        videoRef.current.muted = muted
+      if (autoplayRef.current) {
+        videoRef.current.muted = mutedRef.current
         const result = player.play()
         if (result instanceof Promise) {
           result
@@ -184,7 +173,7 @@ export const MpegtsPlayer = forwardRef<MpegtsPlayerRef, MpegtsPlayerProps>(
         }
         playerRef.current = null
       }
-    }, [url, config, type, isLive, cors, withCredentials, hasAudio, hasVideo, duration, filesize, autoplay, muted, buildMediaDataSource, updateStatus])
+    }, [url, updateStatus])
 
     useEffect(() => {
       if (videoRef.current) {

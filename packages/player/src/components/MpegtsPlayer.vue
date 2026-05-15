@@ -42,6 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
   isLive: true,
   muted: true,
   type: 'mse',
+  hasVideo: true,
   config: () => ({}),
 });
 
@@ -127,7 +128,9 @@ function createPlayer() {
   emit('status', 'connecting');
 
   const mergedConfig: MpegtsConfig = { ...DEFAULT_CONFIG, ...props.config };
+  // console.log(mergedConfig);
   const mediaSource = buildMediaDataSource();
+  // console.log(mediaSource);
 
   player = Mpegts.createPlayer(mediaSource, mergedConfig);
 
